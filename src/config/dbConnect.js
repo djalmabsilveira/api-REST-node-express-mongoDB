@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
 
-mongoose.connect('mongodb+srv://djalmabsilveira:1231231234@cluster0.kyhcsc9.mongodb.net/api-REST-db');
+mongoose.connect(process.env.STRING_CONEXAO_DB);
 
-export const db = mongoose.connection
+export const db = mongoose.connection;
