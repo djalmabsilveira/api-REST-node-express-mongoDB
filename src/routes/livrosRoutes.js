@@ -5,7 +5,7 @@ export const livrosRouter = express.Router();
 
 livrosRouter
   .get("/livros", LivroController.listarLivros)
-  .get("/livros/busca", LivroController.listarLivroPorTitulo)
+  .get("/livros/busca", LivroController.listarLivroPorFiltro)
   .get("/livros/:id", LivroController.listarLivroPorId)
   .post("/livros", LivroController.cadastrarLivro)
   .put("/livros/:id", LivroController.atualizarLivro)

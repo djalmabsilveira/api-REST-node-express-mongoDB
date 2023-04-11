@@ -1,5 +1,5 @@
-import { autores } from "../models/Autor.js";
-
+import { NaoEncontrado } from "../errors/NaoEncontrado.js";
+import { autores } from "../models/index.js";
 export class AutoresController {
   static listarAutores = async (req, res, next) => {
     try {
@@ -17,7 +17,7 @@ export class AutoresController {
       if (autor !== null) {
         res.status(200).send(autor);
       } else {
-        res.status(404).send({ message: "Id do Autor não localizado." });
+        next(new NaoEncontrado("Id do Autor não localizado."));
       }
     } catch (error) {
       next(error);
@@ -37,8 +37,14 @@ export class AutoresController {
   static atualizarAutor = async (req, res, next) => {
     try {
       const id = req.params.id;
-      await autores.findByIdAndUpdate(id, { $set: req.body });
-      res.status(200).send({ message: "Autor atualizado com sucesso" });
+      const autorAtualizado = await autores.findByIdAndUpdate(id, {
+        $set: req.body,
+      });
+      if (autorAtualizado !== null) {
+        res.status(200).send({ message: "Autor atualizado com sucesso" });
+      } else {
+        next(new NaoEncontrado("Id do Autor não localizado."));
+      }
     } catch (error) {
       next(error);
     }
@@ -50,7 +56,7 @@ export class AutoresController {
       await autores.findByIdAndDelete(id);
       res.status(200).send({ message: "Autor removido com sucesso" });
     } catch (error) {
-      next(error);
+      next(new NaoEncontrado("Id do Autor não localizado."));
     }
   };
 }

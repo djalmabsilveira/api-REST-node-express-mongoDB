@@ -1,4 +1,5 @@
-import { livros } from "../models/Livro.js";
+import { NaoEncontrado } from "../errors/NaoEncontrado.js";
+import { livros } from "../models/index.js";
 
 export class LivroController {
   static listarLivros = async (req, res, next) => {
@@ -16,14 +17,16 @@ export class LivroController {
       const livro = await livros.findById(id).populate("autor", "nome");
       res.status(200).send(livro);
     } catch (error) {
-      next(error);
+      next(new NaoEncontrado("Id do livro não localizado."));
     }
   };
 
-  static listarLivroPorTitulo = async (req, res, next) => {
+  static listarLivroPorFiltro = async (req, res, next) => {
     try {
-      const titulo = req.query.titulo;
-      const livro = await livros.find({ titulo: titulo });
+      const busca = processaBusca(req.query);
+
+      const livro = await livros.find(busca);
+
       res.status(200).send(livro);
     } catch (error) {
       next(error);
@@ -43,8 +46,14 @@ export class LivroController {
   static atualizarLivro = async (req, res, next) => {
     try {
       const id = req.params.id;
-      await livros.findByIdAndUpdate(id, { $set: req.body });
-      res.status(200).send({ message: "Livro atualizado com sucesso" });
+      const livroAtualizado = await livros.findByIdAndUpdate(id, {
+        $set: req.body,
+      });
+      if (livroAtualizado !== null) {
+        res.status(200).send({ message: "Livro atualizado com sucesso" });
+      } else {
+        next(new NaoEncontrado("Id do livro não localizado."));
+      }
     } catch (error) {
       next(error);
     }
@@ -53,10 +62,24 @@ export class LivroController {
   static excluirLivro = async (req, res, next) => {
     try {
       const id = req.params.id;
-      await livros.findByIdAndDelete(id);
-      res.status(200).send({ message: "Livro removido com sucesso" });
+      const livroExcluido = await livros.findByIdAndDelete(id);
+      if (livroExcluido !== null) {
+        res.status(200).send({ message: "Livro removido com sucesso" });
+      } else {
+        next(new NaoEncontrado("Id do livro não localizado."));
+      }
     } catch (error) {
       next(error);
     }
   };
+}
+
+function processaBusca(parametros) {
+  const { editora, titulo, minPaginas, maxpaginas } = parametros;
+
+  const busca = {};
+
+  if (editora) busca.editora = { $regex: editora, $options: "i" };
+  if (titulo) busca.titulo = { $regex: titulo, $options: "i" };
+  if(minPaginas||maxpaginas) 
 }
