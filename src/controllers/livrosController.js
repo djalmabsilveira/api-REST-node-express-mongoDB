@@ -13,10 +13,12 @@ export class LivroController {
       if (limite > 0 && pagina > 0) {
         const listaLivros = await livros
           .find()
+          .sort({ _id: -1 })
           .skip((pagina - 1) * limite)
           .limit(limite)
           .populate("autor")
           .exec();
+
         res.status(200).json(listaLivros);
       } else {
         next(new RequisicaoIncorreta());
